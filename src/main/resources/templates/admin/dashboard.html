@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Admin Dashboard - Manage Quizzes</h2>
+            <a sec:authorize="isAuthenticated()" th:href="@{/logout}" class="btn btn-danger">Logout</a>
+        </div>
+        <a th:href="@{/admin/quiz/add}" class="btn">Create New Quiz</a>
+        <hr/>
+        <h3>Existing Quizzes</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Time Limit (Secs)</th> 
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="quiz : ${quizzes}">
+                    <td th:text="${quiz.title}"></td>
+                    <td th:text="${quiz.description}"></td>
+                    <td th:text="${quiz.timeLimitInSeconds}"></td> 
+                    <td>
+                        <a th:href="@{/admin/quiz/{id}/questions(id=${quiz.id})}" class="btn">Manage Questions</a>
+                        <a th:href="@{/admin/quiz/edit/{id}(id=${quiz.id})}" class="btn">Edit</a>
+                        <a th:href="@{/admin/quiz/delete/{id}(id=${quiz.id})}" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

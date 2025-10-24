@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Available Quizzes</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Available Quizzes</h2>
+            <div>
+                 <a th:href="@{/results/my}" class="btn">My Results</a>
+                 <a sec:authorize="isAuthenticated()" th:href="@{/logout}" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+        <hr/>
+        <div th:if="${#lists.isEmpty(quizzes)}">
+            <p>No quizzes available at the moment. Please check back later.</p>
+        </div>
+        <div th:each="quiz : ${quizzes}" class="quiz-card">
+            <h3 th:text="${quiz.title}"></h3>
+            <p th:text="${quiz.description}"></p>
+            <p><strong>Time Limit:</strong> <span th:text="${quiz.timeLimitInSeconds}"></span> seconds</p>
+            <a th:href="@{/quiz/take/{id}(id=${quiz.id})}" class="btn">Start Quiz</a>
+        </div>
+    </div>
+</body>
+</html>

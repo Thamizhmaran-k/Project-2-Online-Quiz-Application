@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Results</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h2>My Past Quiz Results</h2>
+        <a th:href="@{/quiz/list}" class="btn">Back to Quizzes</a>
+        <hr/>
+         <div th:if="${#lists.isEmpty(results)}">
+            <p>You have not taken any quizzes yet.</p>
+        </div>
+        <table th:unless="${#lists.isEmpty(results)}">
+            <thead>
+                <tr>
+                    <th>Quiz Title</th>
+                    <th>Score</th>
+                    <th>Correct/Total</th>
+                    <th>Date Taken</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="result : ${results}">
+                    <td th:text="${result.quiz.title}"></td>
+                    <td th:text="${result.score} + '%'"></td>
+                    <td th:text="${result.totalCorrect} + '/' + ${result.totalQuestions}"></td>
+                    <td th:text="${#temporals.format(result.submissionTime, 'dd-MMM-yyyy HH:mm')}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

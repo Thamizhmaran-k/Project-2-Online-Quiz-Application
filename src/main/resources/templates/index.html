@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Welcome to Quiz App</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Online Quiz Application</h1>
+        <p>Test your knowledge and compete with others!</p>
+        <div>
+            <a th:href="@{/login}" class="btn">Login</a>
+            <a th:href="@{/register}" class="btn">Register</a>
+        </div>
+    </div>
+</body>
+</html>

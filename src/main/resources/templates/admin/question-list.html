@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Questions</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h2>Manage Questions for: <span th:text="${quiz.title}"></span></h2>
+        <a th:href="@{/admin/quiz/{id}/question/add(id=${quiz.id})}" class="btn">Add New Question</a>
+        <a th:href="@{/admin/dashboard}" class="btn">Back to Dashboard</a>
+        <hr/>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${#lists.isEmpty(quiz.questions)}">
+            <p>No questions found for this quiz.</p>
+        </div>
+        <div th:each="question, iterStat : ${quiz.questions}" class="question-card">
+            <h4>Q<span th:text="${iterStat.count}"></span>: <span th:text="${question.content}"></span></h4>
+            <ol type="A">
+                <li th:each="option, optStat : ${question.options}" 
+                    th:text="${option}"
+                    th:style="${optStat.index == question.correctAnswerIndex} ? 'font-weight:bold; color:green;'">
+                </li>
+            </ol>
+             <a th:href="@{/admin/question/delete/{id}(id=${question.id})}" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+        </div>
+    </div>
+</body>
+</html>
