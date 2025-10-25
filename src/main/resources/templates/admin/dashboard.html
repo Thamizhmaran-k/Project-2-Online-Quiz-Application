@@ -6,19 +6,15 @@
 </head>
 <body>
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Admin Dashboard - Manage Quizzes</h2>
-            <a sec:authorize="isAuthenticated()" th:href="@{/logout}" class="btn btn-danger">Logout</a>
-        </div>
-        <a th:href="@{/admin/quiz/add}" class="btn">Create New Quiz</a>
-        <hr/>
+        <!-- ... top part ... -->
         <h3>Existing Quizzes</h3>
         <table>
             <thead>
                 <tr>
                     <th>Title</th>
                     <th>Description</th>
-                    <th>Time Limit (Secs)</th> 
+                    <!-- Changed header -->
+                    <th>Time/Question (Secs)</th> 
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -26,7 +22,7 @@
                 <tr th:each="quiz : ${quizzes}">
                     <td th:text="${quiz.title}"></td>
                     <td th:text="${quiz.description}"></td>
-                    <td th:text="${quiz.timeLimitInSeconds}"></td> 
+                    <td th:text="${quiz.timePerQuestionInSeconds}"></td> 
                     <td>
                         <a th:href="@{/admin/quiz/{id}/questions(id=${quiz.id})}" class="btn">Manage Questions</a>
                         <a th:href="@{/admin/quiz/edit/{id}(id=${quiz.id})}" class="btn">Edit</a>

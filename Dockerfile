@@ -1,16 +1,26 @@
-# Stage 1: Build the application using Maven
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean install -DskipTests
+# Run this project with java 21
 
-# Stage 2: Create the final, smaller image with the Java Runtime
-FROM eclipse-temurin:17-jre-jammy
+# ---------- Stage 1: Build ----------
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
-# Copy the built .jar file from the 'build' stage
+
+# Copy pom.xml and download dependencies (cached)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy the rest of the source code and build the JAR
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# ---------- Stage 2: Run ----------
+FROM openjdk:25-jdk-slim
+WORKDIR /app
+
+# Copy only the built JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
-# Expose the port the application runs on
+
+# Expose Render's port
 EXPOSE 8080
-# Command to run the application
+
+# Run the Spring Boot application
 ENTRYPOINT ["java", "-jar", "app.jar"]

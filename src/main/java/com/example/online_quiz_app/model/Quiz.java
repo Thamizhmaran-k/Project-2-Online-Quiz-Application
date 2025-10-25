@@ -12,7 +12,8 @@ public class Quiz {
     private Long id;
     private String title;
     private String description;
-    private int timeLimitInSeconds; // Renamed from timeLimitInMinutes
+    
+    private int timePerQuestionInSeconds; 
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;

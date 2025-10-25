@@ -17,8 +17,9 @@
                 <textarea id="description" th:field="*{description}" class="form-control" required></textarea>
             </div>
             <div class="form-group">
-                <label for="timeLimitInSeconds">Time Limit (in seconds):</label>
-                <input type="number" id="timeLimitInSeconds" th:field="*{timeLimitInSeconds}" class="form-control" required min="1">
+                <!-- Changed label and field -->
+                <label for="timePerQuestionInSeconds">Time Per Question (in seconds):</label>
+                <input type="number" id="timePerQuestionInSeconds" th:field="*{timePerQuestionInSeconds}" class="form-control" required min="5"> 
             </div>
             <button type="submit" class="btn">Save Quiz</button>
             <a th:href="@{/admin/dashboard}" class="btn">Cancel</a>

@@ -3,45 +3,195 @@
 <head>
     <title>Take Quiz</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* Add styles to hide questions initially and for feedback */
+        .question-container { display: none; margin-bottom: 20px; }
+        .question-container.active { display: block; }
+        .feedback { margin-top: 15px; padding: 10px; border-radius: 5px; font-weight: bold; }
+        .feedback.correct { background-color: #d4edda; color: #155724; }
+        .feedback.incorrect { background-color: #f8d7da; color: #721c24; }
+        .options-list label { display: block; margin-bottom: 5px; }
+        input[type="radio"]:disabled + label { color: grey; } 
+    </style>
 </head>
 <body>
     <div class="container">
         <h2 th:text="${quiz.title}"></h2>
-        <div id="timer"></div>
-        <form id="quizForm" th:action="@{/quiz/submit}" method="post">
+        
+        <!-- Timer Display -->
+        <div id="timer" style="font-size: 1.5em; font-weight: bold; text-align: center; margin-bottom: 20px;"></div>
+
+        <!-- Hidden form for final submission -->
+        <form id="quizForm" th:action="@{/quiz/submit}" method="post" style="display: none;">
             <input type="hidden" name="quizId" th:value="${quiz.id}" />
-            <div th:each="question, iterStat : ${quiz.questions}" class="question-card">
+            <!-- Answers will be added here dynamically by JS -->
+        </form>
+
+        <!-- Container for Questions -->
+        <div id="questions-area">
+            <div th:each="question, iterStat : ${quiz.questions}" 
+                 th:id="'question-' + ${iterStat.index}" 
+                 class="question-container"
+                 th:attr="data-correct-index=${question.correctAnswerIndex}"> <!-- Store correct index -->
+                 
                 <h4>Q<span th:text="${iterStat.count}"></span>: <span th:text="${question.content}"></span></h4>
                 <ul class="options-list">
                     <li th:each="option, optStat : ${question.options}">
-                        <input type="radio" th:name="'question_' + ${question.id}" th:id="'q' + ${question.id} + 'o' + ${optStat.index}" th:value="${optStat.index}" required>
+                        <input type="radio" 
+                               th:name="'q_' + ${question.id}" 
+                               th:id="'q' + ${question.id} + 'o' + ${optStat.index}" 
+                               th:value="${optStat.index}">
                         <label th:for="'q' + ${question.id} + 'o' + ${optStat.index}" th:text="${option}"></label>
                     </li>
                 </ul>
+                <div class="feedback"></div> <!-- Area for correct/incorrect message -->
             </div>
-            <button type="submit" class="btn">Submit Quiz</button>
-        </form>
+        </div>
+        
+        <!-- Message area for when quiz is finished -->
+        <div id="quiz-complete-message" style="display: none; text-align: center; font-weight: bold; margin-top: 20px;">
+            Quiz finished! Submitting your answers...
+        </div>
+
     </div>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        const timeLimit = /*[[${quiz.timeLimitInSeconds}]]*/;
+        
+        // --- Get Data from Thymeleaf ---
+        const quizData = /*[[${quiz}]]*/ null;
+        const questions = quizData ? quizData.questions : [];
+        const timePerQuestion = quizData ? quizData.timePerQuestionInSeconds : 10; // Default 10s if null
+        
+        // --- State Variables ---
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // Store answers as { questionId: selectedIndex }
+        let timerInterval;
+        let timeLeft = timePerQuestion;
+        
+        // --- DOM Elements ---
         const timerElement = document.getElementById('timer');
-        const quizForm = document.getElementById('quizForm');
-        let timeLeft = timeLimit;
+        const questionsArea = document.getElementById('questions-area');
+        const quizCompleteMessage = document.getElementById('quiz-complete-message');
+        const quizForm = document.getElementById('quizForm'); // Get the hidden form
 
-        const timerInterval = setInterval(() => {
-            timeLeft--;
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerElement.textContent = `Time Left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        // --- Functions ---
 
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                alert('Time is up! Submitting your answers.');
-                quizForm.submit();
+        function updateTimerDisplay() {
+            timerElement.textContent = `Time Left: ${timeLeft}s`;
+        }
+
+        function startTimer() {
+            timeLeft = timePerQuestion;
+            updateTimerDisplay();
+            clearInterval(timerInterval); 
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    checkAnswerAndProceed(); // Time's up, move on
+                }
+            }, 1000);
+        }
+
+        function displayQuestion(index) {
+            if (index >= questions.length) {
+                finishQuiz();
+                return;
             }
-        }, 1000);
+            
+            // Hide all questions
+            document.querySelectorAll('.question-container').forEach(el => el.classList.remove('active'));
+            
+            // Show the current one
+            const currentQuestionElement = document.getElementById(`question-${index}`);
+            if (currentQuestionElement) {
+                currentQuestionElement.classList.add('active');
+                // Ensure radio buttons are enabled
+                currentQuestionElement.querySelectorAll('input[type="radio"]').forEach(radio => radio.disabled = false);
+                 // Clear previous feedback
+                const feedbackEl = currentQuestionElement.querySelector('.feedback');
+                feedbackEl.textContent = '';
+                feedbackEl.className = 'feedback'; // Reset classes
+                
+                startTimer();
+            } else {
+                console.error("Could not find question element for index:", index);
+                finishQuiz(); // Avoid getting stuck
+            }
+        }
+
+        function checkAnswerAndProceed() {
+            clearInterval(timerInterval); // Stop the timer immediately
+            timerElement.textContent = "Time's up!";
+
+            const question = questions[currentQuestionIndex];
+            const questionElement = document.getElementById(`question-${currentQuestionIndex}`);
+            const feedbackEl = questionElement.querySelector('.feedback');
+            const radioButtons = questionElement.querySelectorAll('input[type="radio"]');
+            
+            let selectedOptionIndex = -1;
+            radioButtons.forEach((radio, index) => {
+                if (radio.checked) {
+                    selectedOptionIndex = parseInt(radio.value);
+                }
+                radio.disabled = true; // Disable options after time up/selection
+            });
+
+            // Store the answer (even if none selected, store -1 or null)
+            userAnswers[question.id] = selectedOptionIndex;
+
+            // Check correctness and show feedback
+            const correctIndex = question.correctAnswerIndex;
+            if (selectedOptionIndex === correctIndex) {
+                feedbackEl.textContent = 'Correct!';
+                feedbackEl.className = 'feedback correct';
+            } else {
+                const correctAnswerText = question.options[correctIndex];
+                feedbackEl.textContent = `Incorrect. The correct answer was: ${correctAnswerText}`;
+                feedbackEl.className = 'feedback incorrect';
+            }
+
+            // Move to the next question after a delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                displayQuestion(currentQuestionIndex);
+            }, 2000); // Show feedback for 2 seconds
+        }
+        
+        function finishQuiz() {
+             clearInterval(timerInterval);
+             timerElement.style.display = 'none'; // Hide timer
+             document.querySelectorAll('.question-container').forEach(el => el.classList.remove('active')); // Hide last question
+             quizCompleteMessage.style.display = 'block'; // Show completion message
+             submitQuizToServer();
+        }
+
+        function submitQuizToServer() {
+            // Populate the hidden form with user answers
+            for (const questionId in userAnswers) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                // Name format matches what the controller expects: "question_ID"
+                input.name = `question_${questionId}`; 
+                input.value = userAnswers[questionId]; // Value is the selected index
+                quizForm.appendChild(input);
+            }
+            
+            // Submit the form
+            quizForm.submit();
+        }
+
+        // --- Initial Call ---
+        if (questions && questions.length > 0) {
+            displayQuestion(currentQuestionIndex);
+        } else {
+             timerElement.textContent = "No questions in this quiz.";
+        }
+        
         /*]]>*/
     </script>
 </body>

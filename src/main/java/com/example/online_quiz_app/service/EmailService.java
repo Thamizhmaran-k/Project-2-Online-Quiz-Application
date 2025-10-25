@@ -18,7 +18,7 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(body);
             // Set the 'from' address. Must match the authenticated user in application.properties
-            message.setFrom("your_email@gmail.com"); 
+            message.setFrom("thamizhmaran0@gmail.com"); 
 
             mailSender.send(message);
         } catch (Exception e) {
