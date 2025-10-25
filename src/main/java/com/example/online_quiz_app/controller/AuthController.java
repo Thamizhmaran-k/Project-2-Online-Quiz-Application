@@ -43,7 +43,9 @@ public class AuthController {
                                BindingResult result, Model model) {
         User existingUser = userService.findByUsername(userDto.getUsername());
         if (existingUser != null) {
-            result.rejectValue("username", null, "There is already an account registered with that username");
+            // --- THIS IS THE FIX ---
+            // We replaced null with "UsernameExists"
+            result.rejectValue("username", "UsernameExists", "There is already an account registered with that username");
         }
 
         if (result.hasErrors()) {
