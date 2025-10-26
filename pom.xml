@@ -79,14 +79,8 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
-<<<<<<< HEAD
         </dependency>
-    </dependencies>
-=======
-            <!-- Version is managed by Spring Boot parent, no need to specify -->
-        </dependency>     
 </dependencies>
->>>>>>> 20a6ac45c74caddfc725e405d06b01b05976ee06
     <build>
         <plugins>
             <plugin>
