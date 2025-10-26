@@ -8,8 +8,11 @@ import com.example.online_quiz_app.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime; // Required import
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID; // Required import
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -19,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
+    // Constructor Injection
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
@@ -45,7 +49,6 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        // Send confirmation email
         String subject = "Registration Successful!";
         String body = "Welcome, " + user.getUsername() + "! Your registration for the Online Quiz App was successful.";
         emailService.sendEmail(user.getEmail(), subject, body);
@@ -59,5 +62,30 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public String createPasswordResetTokenForUser(User user) {
+        String token = UUID.randomUUID().toString();
+        user.setResetToken(token);
+        user.setResetTokenExpiry(LocalDateTime.now().plusHours(1)); // Token valid for 1 hour
+        userRepository.save(user);
+        return token;
+    }
+
+    @Override
+    public User findByPasswordResetToken(String token) {
+        return userRepository.findByResetToken(token)
+                // Check if token exists AND is not expired
+                .filter(u -> u.getResetTokenExpiry() != null && u.getResetTokenExpiry().isAfter(LocalDateTime.now()))
+                .orElse(null);
+    }
+
+    @Override
+    public void changeUserPassword(User user, String password) {
+        user.setPassword(passwordEncoder.encode(password));
+        user.setResetToken(null); // Invalidate token after use
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
     }
 }

@@ -20,7 +20,7 @@
         <div th:each="quiz : ${quizzes}" class="quiz-card">
             <h3 th:text="${quiz.title}"></h3>
             <p th:text="${quiz.description}"></p>
-            <p><strong>Time Limit:</strong> <span th:text="${quiz.timeLimitInSeconds}"></span> seconds</p>
+            <p><strong>Time:</strong> <span th:text="${quiz.timePerQuestionInSeconds}"></span> seconds per question</p>
             <a th:href="@{/quiz/take/{id}(id=${quiz.id})}" class="btn">Start Quiz</a>
         </div>
     </div>

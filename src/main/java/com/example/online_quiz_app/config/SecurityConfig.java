@@ -1,12 +1,12 @@
 package com.example.online_quiz_app.config;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.context.annotation.Configuration; // Required import
+import org.springframework.security.config.annotation.web.builders.HttpSecurity; // Required import
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity; // Required import
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.SecurityFilterChain; // Required import
 
 @Configuration
 @EnableWebSecurity
@@ -21,9 +21,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers("/register/**", "/css/**", "/js/**", "/").permitAll()
+                        authorize
+                                // Allow password reset pages
+                                .requestMatchers("/forgot-password", "/reset-password/**").permitAll()
+                                // Allow public access
+                                .requestMatchers("/register/**", "/css/**", "/js/**", "/").permitAll()
+                                // Admin only
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                                // Participant only
                                 .requestMatchers("/quiz/**", "/results/**").hasAuthority("ROLE_PARTICIPANT")
+                                // All other requests need authentication
                                 .anyRequest().authenticated()
                 ).formLogin(
                         form -> form
@@ -33,7 +40,7 @@ public class SecurityConfig {
                                 .permitAll()
                 ).logout(
                         logout -> logout
-                                .logoutSuccessUrl("/login?logout") // Redirect to login page with a logout message
+                                .logoutSuccessUrl("/login?logout")
                                 .permitAll()
                 );
         return http.build();

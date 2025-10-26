@@ -6,22 +6,28 @@
 </head>
 <body>
     <div class="container">
-        <!-- ... top part ... -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Admin Dashboard - Manage Quizzes</h2>
+            <a sec:authorize="isAuthenticated()" th:href="@{/logout}" class="btn btn-danger">Logout</a>
+        </div>
+        <a th:href="@{/admin/quiz/add}" class="btn">Create New Quiz</a>
+        <hr/>
         <h3>Existing Quizzes</h3>
         <table>
             <thead>
                 <tr>
                     <th>Title</th>
                     <th>Description</th>
-                    <!-- Changed header -->
                     <th>Time/Question (Secs)</th> 
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="quiz : ${quizzes}">
+                <!-- Check if quizzes object exists and is not empty -->
+                <tr th:if="${quizzes != null}" th:each="quiz : ${quizzes}">
                     <td th:text="${quiz.title}"></td>
                     <td th:text="${quiz.description}"></td>
+                    <!-- Ensure this uses the correct field name -->
                     <td th:text="${quiz.timePerQuestionInSeconds}"></td> 
                     <td>
                         <a th:href="@{/admin/quiz/{id}/questions(id=${quiz.id})}" class="btn">Manage Questions</a>
@@ -29,6 +35,9 @@
                         <a th:href="@{/admin/quiz/delete/{id}(id=${quiz.id})}" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                     </td>
                 </tr>
+                 <tr th:if="${quizzes == null or #lists.isEmpty(quizzes)}">
+                     <td colspan="4">No quizzes found.</td>
+                 </tr>
             </tbody>
         </table>
     </div>

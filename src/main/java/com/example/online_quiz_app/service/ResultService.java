@@ -24,19 +24,28 @@ public class ResultService {
 
     public Result saveResult(Quiz quiz, User user, Map<Long, Integer> userAnswers) {
         int correctAnswers = 0;
-        for (Question question : quiz.getQuestions()) {
-            Integer userAnswerIndex = userAnswers.get(question.getId());
-            if (userAnswerIndex != null && userAnswerIndex == question.getCorrectAnswerIndex()) {
-                correctAnswers++;
+        int totalQuestions = (quiz.getQuestions() != null) ? quiz.getQuestions().size() : 0;
+
+        if (totalQuestions > 0) {
+            for (Question question : quiz.getQuestions()) {
+                // Get the user's answer for this question (could be null)
+                Integer userAnswerIndex = userAnswers.get(question.getId());
+
+                // Check if the user answered AND if the answer is correct
+                if (userAnswerIndex != null && userAnswerIndex.equals(question.getCorrectAnswerIndex())) {
+                    correctAnswers++;
+                }
             }
         }
 
         Result result = new Result();
         result.setUser(user);
         result.setQuiz(quiz);
-        result.setTotalQuestions(quiz.getQuestions().size());
+        result.setTotalQuestions(totalQuestions);
         result.setTotalCorrect(correctAnswers);
-        int score = (int) (((double) correctAnswers / quiz.getQuestions().size()) * 100);
+
+        // Calculate score, avoid division by zero
+        int score = (totalQuestions > 0) ? (int) (((double) correctAnswers / totalQuestions) * 100) : 0;
         result.setScore(score);
         result.setSubmissionTime(LocalDateTime.now());
 
@@ -44,7 +53,7 @@ public class ResultService {
 
         // Send result email
         String subject = "Quiz Result for " + quiz.getTitle();
-        String body = "Hi " + user.getUsername() + ",\n\nYou scored " + score + "% on the quiz '" + quiz.getTitle() + "'.\nCorrect Answers: " + correctAnswers + "/" + quiz.getQuestions().size();
+        String body = "Hi " + user.getUsername() + ",\n\nYou scored " + score + "% on the quiz '" + quiz.getTitle() + "'.\nCorrect Answers: " + correctAnswers + "/" + totalQuestions;
         emailService.sendEmail(user.getEmail(), subject, body);
 
         return savedResult;

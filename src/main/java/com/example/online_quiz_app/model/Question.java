@@ -1,7 +1,9 @@
 package com.example.online_quiz_app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString; // Import ToString
 import java.util.List;
 
 @Data
@@ -17,6 +19,9 @@ public class Question {
 
     private int correctAnswerIndex;
 
+    // Add ToString.Exclude here
+    @ToString.Exclude 
+    @JsonIgnore 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id")
     private Quiz quiz;

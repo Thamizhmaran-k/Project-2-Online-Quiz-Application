@@ -9,10 +9,10 @@
         <h2>My Past Quiz Results</h2>
         <a th:href="@{/quiz/list}" class="btn">Back to Quizzes</a>
         <hr/>
-         <div th:if="${#lists.isEmpty(results)}">
+         <div th:if="${results == null or #lists.isEmpty(results)}">
             <p>You have not taken any quizzes yet.</p>
         </div>
-        <table th:unless="${#lists.isEmpty(results)}">
+        <table th:unless="${results == null or #lists.isEmpty(results)}">
             <thead>
                 <tr>
                     <th>Quiz Title</th>
@@ -23,10 +23,10 @@
             </thead>
             <tbody>
                 <tr th:each="result : ${results}">
-                    <td th:text="${result.quiz.title}"></td>
-                    <td th:text="${result.score} + '%'"></td>
-                    <td th:text="${result.totalCorrect} + '/' + ${result.totalQuestions}"></td>
-                    <td th:text="${#temporals.format(result.submissionTime, 'dd-MMM-yyyy HH:mm')}"></td>
+                    <td th:text="${result.quiz?.title ?: 'N/A'}">Quiz Title</td>
+                    <td th:text="${result.score} + '%'">Score</td>
+                    <td th:text="${result.totalCorrect} + '/' + ${result.totalQuestions}">Correct/Total</td>
+                    <td th:text="${result.submissionTime != null ? #temporals.format(result.submissionTime, 'dd-MMM-yyyy HH:mm') : 'N/A'}">Date</td>
                 </tr>
             </tbody>
         </table>
