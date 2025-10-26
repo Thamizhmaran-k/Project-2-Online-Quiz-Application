@@ -76,7 +76,12 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <!-- Version is managed by Spring Boot parent, no need to specify -->
+        </dependency>     
+</dependencies>
     <build>
         <plugins>
             <plugin>
