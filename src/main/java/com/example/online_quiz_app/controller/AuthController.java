@@ -1,18 +1,28 @@
 package com.example.online_quiz_app.controller;
 
+// Required imports for DTO, Model, Services
 import com.example.online_quiz_app.dto.UserDto;
 import com.example.online_quiz_app.model.User;
 import com.example.online_quiz_app.service.EmailService;
 import com.example.online_quiz_app.service.UserService;
+
+// Required imports for validation
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired; // Optional but good practice
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority; // Required for dashboard logic
+
+// Required imports for Spring MVC
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes; // Required for flash messages
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+// Required imports for Spring Security (Authentication object)
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority; // Import needed for role checking
 
 @Controller
 public class AuthController {
@@ -71,19 +81,25 @@ public class AuthController {
     // Corrected dashboard redirect logic
     @GetMapping("/dashboard")
     public String userDashboard(Authentication authentication) {
-        // Check if the user has the ROLE_ADMIN authority
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(role -> role.equals("ROLE_ADMIN"));
+        // Ensure authentication object is not null and the user is authenticated
+        if (authentication != null && authentication.isAuthenticated()) {
+            // Check if the user has the ROLE_ADMIN authority
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .anyMatch(role -> role.equals("ROLE_ADMIN"));
 
-        if (isAdmin) {
-            // If admin, redirect to admin dashboard
-            return "redirect:/admin/dashboard";
-        } else {
-            // Otherwise, redirect to participant quiz list
-            return "redirect:/quiz/list";
+            if (isAdmin) {
+                // If admin, redirect to admin dashboard
+                return "redirect:/admin/dashboard";
+            } else {
+                // Otherwise (participant), redirect to participant quiz list
+                return "redirect:/quiz/list";
+            }
         }
+        // If authentication is null or user is not authenticated, redirect to login
+        return "redirect:/login";
     }
+
 
     // --- Password Reset Endpoints ---
 
@@ -168,7 +184,6 @@ public class AuthController {
         // If all checks pass, change the password
         userService.changeUserPassword(user, password);
         redirectAttributes.addFlashAttribute("message", "Your password has been reset successfully. Please log in.");
-        return "redirect:/login"; // Redirect to login page on success
-    }
+        return "redirect:/login";
 }
-
+}
